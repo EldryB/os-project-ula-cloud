@@ -1,0 +1,25 @@
+# --- Binarios y Objetos ---
+bin/
+obj/
+*.o
+*.out
+
+# --- Logs de Ejecución ---
+# Ignoramos los logs que genera el service_logger
+*.log
+
+# --- Archivos de Sistema y Editores ---
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+
+# --- IDEs (Opcional pero recomendado) ---
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# --- Temporales de compilación ---
+.cache/
