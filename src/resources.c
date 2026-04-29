@@ -12,9 +12,19 @@
  * * Ayuda: Revisar la constante RLIMIT_AS en la documentación de Linux.
  */
 void apply_resource_limits(size_t mem_limit) {
-    // TODO: Configurar la estructura rlimit y ejecutar la syscall.
+
+    struct rlimit limits;
+
+    limits.rlim_cur = mem_limit;
+    limits.rlim_max = mem_limit;
+
+    //El primer argumento es el recurso que queremos limitar, el segundo la dir de memoria de limits
+    int val = setrlimit(RLIMIT_AS, &limits);
+
+    if(val != 0)//setrlimit fallo
+    {
+        perror("error en setrlimit");
+        exit(1);
+    }
     
-    // Casos a considerar:
-    // - ¿Qué diferencia hay entre rlim_cur y rlim_max?
-    // - ¿Qué sucede si el límite solicitado es menor al tamaño del propio binario?
 }

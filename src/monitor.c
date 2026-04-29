@@ -13,16 +13,19 @@
  * 4. Actualizar el Dashboard Global de forma SEGURA (evitar condiciones de carrera).
  */
 void* monitor_service(void *arg) {
-    // TODO: Castear el argumento al tipo de dato correcto.
+
     service_t* serv = (service_t*)arg;
     int status;
+
+    //Llamamos a la funcion bloqueante 
     waitpid(serv->pid, &status, 0);
     pthread_mutex_lock(&dashboard_mutex);
-    if(WIFEXITED(status))
+
+    if(WIFEXITED(status))//Verificamos si el proceso termino por su cuenta
     {
         int ret = WEXITSTATUS(status);
         serv->exit_status = ret;
-        if(ret == 0)
+        if(ret == 0)//Aqui verificamos el estado con el cual termino
         {
             serv->state = STATE_STOPPED;
         }
@@ -32,10 +35,10 @@ void* monitor_service(void *arg) {
         }
     }
 
-    if(WIFSIGNALED(status))
+    if(WIFSIGNALED(status))//Si el proceso lo cortaron
     {
-        serv->exit_status = WTERMSIG(status);
-        serv->state = STATE_KILLED;
+        serv->exit_status = WTERMSIG(status);//Guardamos la señal que lo mato
+        serv->state = STATE_KILLED;//Estado con el que murio
     }
     pthread_mutex_unlock(&dashboard_mutex);
     return NULL;

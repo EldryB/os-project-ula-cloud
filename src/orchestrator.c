@@ -17,24 +17,19 @@
  * - Retornar el PID asignado.
  */
 int spawn_service(int index) {
-    // 1. Clonar el proceso actual
+    // Clonamos el proceso actual
     pid_t pid = fork();
 
-    if (pid < 0) {
-        // El kernel no pudo crear el proceso por cualquier razon
-        perror("[Orquestador] Error al ejecutar fork");
-        return -1;
-        
-    } 
     
-    else if (pid == 0) {
+    if (pid == 0) 
+    {
         
-        // TODO: Aquí llamaremos a apply_resource_limits() más adelante.
-
         // Preparamos los argumentos para execvp. 
         // args[0] por convención es el nombre/ruta del programa.
         // El último elemento DEBE ser NULL.
         char *args[] = { dashboard[index].path, NULL };
+
+        apply_resource_limits(dashboard[index].mem_limit);
 
         // El proceso hijo se convierte en el microservicio.
         execvp(args[0], args);
@@ -47,8 +42,16 @@ int spawn_service(int index) {
         
     } 
     
+    else if (pid < 0) 
+    {
+        // El kernel no pudo crear el proceso por cualquier razon
+        perror("[Orquestador] Error al ejecutar fork");
+        return -1;
+        
+    } 
+
     else {
-        // Caso C: ESTE ES EL PROCESO PADRE
+        // ESTE ES EL PROCESO PADRE
         // Registramos la información vital en nuestro dashboard global
         dashboard[index].pid = pid;
         dashboard[index].state = STATE_RUNNING;
