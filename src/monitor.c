@@ -14,23 +14,29 @@
  */
 void* monitor_service(void *arg) {
     // TODO: Castear el argumento al tipo de dato correcto.
-    
-    // TODO: Implementar la espera del proceso específico.
-    // Ayuda: Revisar el uso de waitpid(pid, &status, 0).
+    service_t* serv = (service_t*)arg;
+    int status;
+    waitpid(serv->pid, &status, 0);
+    pthread_mutex_lock(&dashboard_mutex);
+    if(WIFEXITED(status))
+    {
+        int ret = WEXITSTATUS(status);
+        serv->exit_status = ret;
+        if(ret == 0)
+        {
+            serv->state = STATE_STOPPED;
+        }
+        else
+        {
+            serv->state = STATE_CRASHED;
+        }
+    }
 
-    /* * Una vez que waitpid retorna, el proceso hijo ha cambiado de estado.
-     * TODO: Analizar el 'status' usando las macros de sys/wait.h:
-     * - WIFEXITED: ¿Terminó normalmente?
-     * - WEXITSTATUS: ¿Cuál fue su código de retorno?
-     * - WIFSIGNALED: ¿Fue terminado por una señal (Segfault, OOM Killer)?
-     * - WTERMSIG: ¿Qué señal lo mató?
-     */
-
-    /*
-     * TODO: Actualizar el dashboard global.
-     * ¡CRÍTICO!: El acceso al array 'dashboard' debe estar protegido. 
-     * No olvides liberar el mecanismo de sincronización al terminar.
-     */
-
+    if(WIFSIGNALED(status))
+    {
+        serv->exit_status = WTERMSIG(status);
+        serv->state = STATE_KILLED;
+    }
+    pthread_mutex_unlock(&dashboard_mutex);
     return NULL;
 }

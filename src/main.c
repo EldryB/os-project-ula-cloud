@@ -25,7 +25,8 @@ void clear_screen() {
 
 const char* get_state_string(service_state_t s) {
     
-    switch (s) {
+    switch (s) 
+    {
         case STATE_IDLE:    return "IDLE";
         case STATE_RUNNING: return "RUNNING";
         case STATE_CRASHED: return "CRASHED";
@@ -43,23 +44,16 @@ void print_dashboard() {
     printf("%-15s %-10s %-15s %-10s\n", "SERVICIO", "PID", "ESTADO", "EXIT/SIG");
     printf("--------------------------------------------------------------\n");
 
-    /* Aqui se debe bloquear el mutex con pthread_mutex_lock(&dashboard_mutex)*/
+    pthread_mutex_lock(&dashboard_mutex);
 
     for (int i = 0; i < num_services; i++) 
     {
-        
         printf("%-15s %-10d %-15s %-10d\n", 
-               dashboard[i].name, 
-               dashboard[i].pid, 
-               get_state_string(dashboard[i].state), 
-               dashboard[i].exit_status);
-    
-        spawn_service(i);
-        
-        // TODO: Aquí lanzaremos el hilo monitor (pthread_create)
+               dashboard[i].name, dashboard[i].pid, 
+               get_state_string(dashboard[i].state), dashboard[i].exit_status);
     }
-    
-    /* Y aquí liberar el mutex con pthread_mutex_unlock(&dashboard_mutex)*/
+    pthread_mutex_unlock(&dashboard_mutex);
+
 
     printf("==============================================================\n");
 }
@@ -102,12 +96,14 @@ int main(int argc, char *argv[]) {
     dashboard[2].mem_limit = 20 * 1024 * 1024; // Límite de 20MB
 
     // 4. Activación del ecosistema
-    printf("[ULA-Cloud] Inicializando %d microservicios...\n", num_services);
+   printf("[ULA-Cloud] Inicializando %d microservicios...\n", num_services);
     
-    for (int i = 0; i < num_services; i++) {
-        /* * TODO: Orquestar el despliegue de servicios y su posterior 
-         * monitoreo concurrente. 
-         */
+    for (int i = 0; i < num_services; i++) 
+    {
+        // Lanzamos el proceso
+        spawn_service(i);
+        // Lanzamos el hilo vigilante para ese proceso
+        pthread_create(&dashboard[i].monitor_thread, NULL, monitor_service, &dashboard[i]);
     }
 
     // 5. Ciclo de monitoreo principal
