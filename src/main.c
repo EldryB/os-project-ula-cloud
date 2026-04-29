@@ -22,6 +22,19 @@ void clear_screen() {
  * TODO: Implementar la visualización del estado actual de los servicios.
  * Se debe garantizar una lectura consistente de los datos compartidos.
  */
+
+const char* get_state_string(service_state_t s) {
+    
+    switch (s) {
+        case STATE_IDLE:    return "IDLE";
+        case STATE_RUNNING: return "RUNNING";
+        case STATE_CRASHED: return "CRASHED";
+        case STATE_KILLED:  return "KILLED";
+        case STATE_STOPPED: return "STOPPED";
+        default:            return "UNKNOWN";
+    }
+}
+
 void print_dashboard() {
     clear_screen();
     printf("==============================================================\n");
@@ -30,7 +43,23 @@ void print_dashboard() {
     printf("%-15s %-10s %-15s %-10s\n", "SERVICIO", "PID", "ESTADO", "EXIT/SIG");
     printf("--------------------------------------------------------------\n");
 
-    // TODO: Renderizar cada fila del dashboard con la información actualizada.
+    /* Aqui se debe bloquear el mutex con pthread_mutex_lock(&dashboard_mutex)*/
+
+    for (int i = 0; i < num_services; i++) 
+    {
+        
+        printf("%-15s %-10d %-15s %-10d\n", 
+               dashboard[i].name, 
+               dashboard[i].pid, 
+               get_state_string(dashboard[i].state), 
+               dashboard[i].exit_status);
+    
+        spawn_service(i);
+        
+        // TODO: Aquí lanzaremos el hilo monitor (pthread_create)
+    }
+    
+    /* Y aquí liberar el mutex con pthread_mutex_unlock(&dashboard_mutex)*/
 
     printf("==============================================================\n");
 }
