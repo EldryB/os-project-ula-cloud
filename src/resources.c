@@ -15,8 +15,8 @@ void apply_resource_limits(size_t mem_limit) {
 
     struct rlimit limits;
 
-    limits.rlim_cur = mem_limit;
-    limits.rlim_max = mem_limit;
+    limits.rlim_cur = mem_limit;//Limite soft
+    limits.rlim_max = mem_limit;//Limite Hard, en nuestro caso ambos iguales
 
     //El primer argumento es el recurso que queremos limitar, el segundo la dir de memoria de limits
     int val = setrlimit(RLIMIT_AS, &limits);

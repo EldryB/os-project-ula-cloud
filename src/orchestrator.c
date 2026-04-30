@@ -20,8 +20,7 @@ int spawn_service(int index) {
     // Clonamos el proceso actual
     pid_t pid = fork();
 
-    
-    if (pid == 0) 
+    if (pid == 0) //Caso que sea un proceso hijo
     {
         
         // Preparamos los argumentos para execvp. 
@@ -29,6 +28,7 @@ int spawn_service(int index) {
         // El último elemento DEBE ser NULL.
         char *args[] = { dashboard[index].path, NULL };
 
+        //Aplicamos los limites de ram que pueda consumir el microservicio
         apply_resource_limits(dashboard[index].mem_limit);
 
         // El proceso hijo se convierte en el microservicio.
@@ -36,8 +36,7 @@ int spawn_service(int index) {
 
         // Si execvp tiene éxito, la imagen del proceso se reemplaza y el código NUNCA llega aquí.
         // Si llegamos a esta línea, significa que execvp falló.
-        fprintf(stderr, "[Orquestador] Error crítico: No se pudo ejecutar %s\n", dashboard[index].path);
-        perror("Detalle del error de execvp");
+        perror("Error en el execvp");
         exit(1); 
         
     } 
@@ -45,13 +44,13 @@ int spawn_service(int index) {
     else if (pid < 0) 
     {
         // El kernel no pudo crear el proceso por cualquier razon
-        perror("[Orquestador] Error al ejecutar fork");
+        perror("Error al ejecutar fork");
         return -1;
         
     } 
 
     else {
-        // ESTE ES EL PROCESO PADRE
+        // Caso del proceso padre
         // Registramos la información vital en nuestro dashboard global
         dashboard[index].pid = pid;
         dashboard[index].state = STATE_RUNNING;

@@ -14,16 +14,20 @@
  */
 void* monitor_service(void *arg) {
 
-    service_t* serv = (service_t*)arg;
+    //Con esto Eliminamos al hilo 
+    pthread_detach(pthread_self()); 
+    
+    service_t* serv = (service_t*)arg;//Casteo para poder usar el parametro de la funccion
     int status;
 
     //Llamamos a la funcion bloqueante 
     waitpid(serv->pid, &status, 0);
+    //Protegemos a que otro hilo no se pueda meter con los datos
     pthread_mutex_lock(&dashboard_mutex);
 
     if(WIFEXITED(status))//Verificamos si el proceso termino por su cuenta
     {
-        int ret = WEXITSTATUS(status);
+        int ret = WEXITSTATUS(status);//Guardamos el valor numerico del exit_status
         serv->exit_status = ret;
         if(ret == 0)//Aqui verificamos el estado con el cual termino
         {

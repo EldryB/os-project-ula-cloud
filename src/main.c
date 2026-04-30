@@ -44,6 +44,7 @@ void print_dashboard() {
     printf("%-15s %-10s %-15s %-10s\n", "SERVICIO", "PID", "ESTADO", "EXIT/SIG");
     printf("--------------------------------------------------------------\n");
 
+    //Protegemos que mas de un hilo no se metan con los datos
     pthread_mutex_lock(&dashboard_mutex);
 
     for (int i = 0; i < num_services; i++) 
@@ -63,9 +64,26 @@ void print_dashboard() {
  * Implementar una estrategia para evitar la proliferación de procesos huérfanos.
  */
 void handle_shutdown(int sig) {
-    printf("\n[ULA-Cloud] Iniciando secuencia de apagado...\n");
+    printf("\n Iniciando apagado\n");
+
+    //Identificamos quien lo mato
+    if (sig == SIGINT) 
+    {
+        printf("\nApagando por Ctrl+C\n");
+    } 
+    else if (sig == SIGTERM) 
+    {
+        printf("\nApagando porque el sistema lo pidio\n");
+    }
     
-    // TODO: Notificar y limpiar recursos de procesos hijos.
+    for (size_t i = 0; i < num_services; i++)
+    {
+        if (dashboard[i].state == STATE_RUNNING)
+        {
+            kill(dashboard[i].pid, SIGTERM);//Evitamos que queden procesos vivos y que se conviertan en huerfanos al parar la ejecucion del programa
+        }
+        
+    }
     
     exit(0);
 }
