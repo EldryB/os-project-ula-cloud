@@ -76,7 +76,7 @@ void handle_shutdown(int sig) {
         printf("\nApagando porque el sistema lo pidio\n");
     }
     
-    for (size_t i = 0; i < num_services; i++)
+    for (int i = 0; i < num_services; i++)
     {
         if (dashboard[i].state == STATE_RUNNING)
         {
